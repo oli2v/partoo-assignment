@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: operations
+    database: partoo-assignment
+    schema: operations
+    tables:
+      - name: business
+      - name: conversation
+      - name: invoice
+      - name: payment
+      - name: date_dim
