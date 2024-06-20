@@ -23,31 +23,17 @@ with distinct_sub_count as (
     from {{ source("operations", "date_dim" )}} d
     left join distinct_sub_count dsc on d.full_date = dsc.subscription_date
     left join distinct_churn_count dcc on d.full_date = dcc.churn_date
+), cumsum as (
+    select
+        *,
+        sum(subscription_count) over (order by date asc) as subscription_count_cumsum,
+        sum(churn_count) over (order by date asc) as churn_count_cumsum,
+    from subscription_ts
+    where date between (select min(subscription_date) from {{ ref("stg_business") }}) 
+    and (select max(subscription_date) from {{ ref("stg_business") }})
 )
-select *
-from subscription_ts
-where date <= current_date()
+select
+    *,
+    round(churn_count_cumsum /  subscription_count_cumsum, 2) as churn_rate
+from cumsum
 order by date desc
-
--- with subscription_ts as (
---     select
---         subscription_date,
---         count(distinct business_id) as subscription_count
---     from {{ source("operations", "date_dim" )}} d
---     left join {{ ref("stg_business") }} b on d.full_date = b.subscription_date
---     group by subscription_date
--- ), churn_ts as (
---     select
---         churn_date,
---         count(distinct business_id) as churn_count
---     from {{ source("operations", "date_dim") }} d
---     left join {{ ref("stg_business") }} b on d.full_date = b.churn_date
---     group by churn_date
--- ), joined_ts as (
---     select
---         subscription_date as date,
---         coalesce(subscription_count, 0) as subscription_count,
---         coalesce(churn_count, 0) as churn_count
---     from subscription_ts sts
---     left join churn_ts cts on sts.subscription_date = cts.churn_date
--- )
