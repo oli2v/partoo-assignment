@@ -1,7 +1,7 @@
-with payed_amounts_sum as (
+with paid_amounts_sum as (
     select
         payment_date,
-        sum(payed_amount) as payed_amount
+        sum(paid_amount) as paid_amount
     from {{ ref("dim_business") }}
     group by payment_date
 ), invoiced_amounts_sum as (
@@ -18,10 +18,10 @@ with payed_amounts_sum as (
         month,
         fiscal_qtr as quarter,
         week_day,
-        coalesce(payed_amount, 0) as payed_amount,
+        coalesce(paid_amount, 0) as paid_amount,
         coalesce(invoiced_amount, 0) as invoiced_amount
     from {{ source("operations", "date_dim" )}} d
-    left join payed_amounts_sum pas on d.full_date = pas.payment_date
+    left join paid_amounts_sum pas on d.full_date = pas.payment_date
     left join invoiced_amounts_sum ias on d.full_date = ias.invoice_date
 )
 select *

@@ -4,9 +4,9 @@ select
     invoice_date,
     invoiced_amount,
     payment_date,
-    payed_amount,
-    round(payed_amount / invoiced_amount, 2) as payed_ratio,
-    round(invoiced_amount - p.payed_amount, 2) as discrepancy,
+    paid_amount,
+    round(paid_amount / invoiced_amount, 2) as paid_ratio,
+    round(invoiced_amount - p.paid_amount, 2) as discrepancy,
     DATE_DIFF(payment_date, invoice_date, day) as payment_time,
     months_before_churn
 from
